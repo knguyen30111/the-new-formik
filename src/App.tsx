@@ -14,7 +14,7 @@ import {
   Radio,
   FormControlLabel,
   Select,
-  MenuItem
+  MenuItem,
 } from '@material-ui/core';
 import * as yup from 'yup';
 
@@ -25,37 +25,59 @@ const validationSchema = yup.object({
     .max(10)
 })
 
-type MyRadioProps = { label: string } & FieldAttributes<{}>
-type MyTextProps = { placeholder: string } & FieldAttributes<{}>
+type HTMLElementProps = {
+  label?: string,
+  placeholder?: string,
+  HTMLType: string,
+  selectOptions?: [string, string]
+}
+  & FieldAttributes<{}>
 
-const MyRadio: React.FC<MyRadioProps> = ({ label, ...props }) => {
-  const [field] = useField<{}>(props);
-  return (
-    <FormControlLabel
-      label={label}
-      control={<Radio />}
-      {...field}
-    />
-  )
+enum HTMLElementType {
+  radio = 'radio',
+  checkbox = 'checkbox',
+  input = 'input',
 }
 
-const MyTextField: React.FC<MyTextProps> = ({ placeholder, ...props }) => {
-  const [field, meta] = useField<{}>(props)
+const HTMLElementRender: React.FC<HTMLElementProps> = ({ label, placeholder, HTMLType, ...props }) => {
+  const [field, meta] = useField<{}>(props);
   const errorText = meta.error && meta.touched ? meta.error : '';
-  return (
-    <TextField
-      placeholder={placeholder}
-      helperText={errorText}
-      error={!!errorText}
-      {...field}
-    />
-  )
+  switch (HTMLType) {
+    case HTMLElementType.radio:
+      return (
+        <FormControlLabel
+          label={label}
+          control={<Radio />}
+          {...field}
+        />
+      )
+
+    case HTMLElementType.checkbox:
+      return (
+        <FormControlLabel
+          label={label}
+          control={<Checkbox />}
+          {...field}
+        />
+      )
+    case HTMLElementType.input:
+      return (
+        <TextField
+          placeholder={placeholder}
+          helperText={errorText}
+          error={!!errorText}
+          {...field}
+        />
+      )
+    default:
+      return null;
+  }
+
 }
 
 interface ValuesType {
   firstName: string,
   lastName: string,
-  fullName: string,
   isTall: false,
   drinks: Array<string>,
   foods: string,
@@ -67,10 +89,27 @@ interface Pet {
   name: string
 }
 
+enum Drink {
+  capuchino = 'capuchino',
+  milkCoffee = 'milkCoffee',
+  darkCoffee = 'darkCoffee',
+}
+
+enum Food {
+  ramen = 'ramen',
+  sushi = 'sushi',
+  udon = 'udon',
+}
+
+enum Animal {
+  cat = 'cat',
+  dog = 'dog',
+  frog = 'frog'
+}
+
 const defaultValues: ValuesType = {
   firstName: '',
   lastName: '',
-  fullName: '',
   isTall: false,
   drinks: [],
   foods: '',
@@ -100,25 +139,49 @@ const App: React.FC = () => {
         {({ values, errors, isSubmitting }) => (
           <Form>
             <div>
-              <MyTextField placeholder='Your First Name' name='firstName' />
-              <MyTextField placeholder='Your Last Name' name='lastName' />
-              <Field placeholder='Your Full Name' name='fullName' as={TextField} />
+              <HTMLElementRender
+                HTMLType={HTMLElementType.input}
+                placeholder='Your First Name'
+                name='firstName'
+              />
+              <HTMLElementRender
+                HTMLType={HTMLElementType.input}
+                placeholder='Your Last Name'
+                name='lastName'
+              />
             </div>
             <div>
-              Is Tall? (This is CheckBox with only one value)
-              <Field name='isTall' type='checkbox' as={Checkbox}></Field>
+              Is Tall:
+              <HTMLElementRender
+                HTMLType={HTMLElementType.checkbox}
+                name='isTall'
+              />
             </div>
             <div>
-              Drink? (This is CheckBox with many values)
-              <Field name='drinks' type='checkbox' value='capuchino' as={Checkbox}></Field>
-              <Field name='drinks' type='checkbox' value='milkCoffee' as={Checkbox}></Field>
-              <Field name='drinks' type='checkbox' value='darkCoffee' as={Checkbox}></Field>
+              Drinks:
+              {Object.values(Drink).map((drink, index) => (
+                <HTMLElementRender
+                  key={`drink-${index}`}
+                  HTMLType={HTMLElementType.checkbox}
+                  name='drinks'
+                  type='checkbox'
+                  value={drink}
+                  label={drink}
+                />
+              ))}
             </div>
             <div>
-              Foods
-              <MyRadio name='foods' type='radio' value='ramen' label='ramen'></MyRadio>
-              <MyRadio name='foods' type='radio' value='sushi' label='sushi'></MyRadio>
-              <MyRadio name='foods' type='radio' value='udon' label='udon'></MyRadio>
+              Foods:
+              {Object.values(Food).map((food, index) => (
+                <HTMLElementRender
+                  key={`food-${index}`}
+                  HTMLType={HTMLElementType.radio}
+                  name='foods'
+                  type='radio'
+                  value={food}
+                  label={food}
+                />
+              ))}
             </div>
             <div>
               <FieldArray name='pets'>
@@ -130,8 +193,9 @@ const App: React.FC = () => {
                       id: '' + Math.floor(Math.random() * Math.floor(100))
                     })}>Add Pet</Button>
                     {values.pets.map((pet, index) => (
-                      <div key={`${index}-${pet.name}`}>
-                        <MyTextField
+                      <div key={`${index * 2}`}>
+                        <HTMLElementRender
+                          HTMLType={HTMLElementType.input}
                           placeholder='Pet Name'
                           name={`pets.${index}.name`}
                         />
