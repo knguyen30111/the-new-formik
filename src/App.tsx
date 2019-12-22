@@ -25,13 +25,26 @@ const validationSchema = yup.object({
     .max(10)
 })
 
-type HTMLElementProps = {
+interface ElementProps {
   label?: string,
   placeholder?: string,
   HTMLType: string,
-  selectOptions?: [string, string]
 }
-  & FieldAttributes<{}>
+
+type HTMLElementProps = ElementProps & FieldAttributes<{}>
+
+enum Drink {
+  capuchino = 'capuchino',
+  milkCoffee = 'milkCoffee',
+  darkCoffee = 'darkCoffee',
+}
+
+enum Food {
+  ramen = 'ramen',
+  sushi = 'sushi',
+  udon = 'udon',
+}
+
 
 enum HTMLElementType {
   radio = 'radio',
@@ -39,7 +52,7 @@ enum HTMLElementType {
   input = 'input',
 }
 
-const HTMLElementRender: React.FC<HTMLElementProps> = ({ label, placeholder, HTMLType, ...props }) => {
+const RenderHTMLElement: React.FC<HTMLElementProps> = ({ label, placeholder, HTMLType, ...props }) => {
   const [field, meta] = useField<{}>(props);
   const errorText = meta.error && meta.touched ? meta.error : '';
   switch (HTMLType) {
@@ -72,7 +85,6 @@ const HTMLElementRender: React.FC<HTMLElementProps> = ({ label, placeholder, HTM
     default:
       return null;
   }
-
 }
 
 interface ValuesType {
@@ -87,24 +99,6 @@ interface ValuesType {
 interface Pet {
   type: string,
   name: string
-}
-
-enum Drink {
-  capuchino = 'capuchino',
-  milkCoffee = 'milkCoffee',
-  darkCoffee = 'darkCoffee',
-}
-
-enum Food {
-  ramen = 'ramen',
-  sushi = 'sushi',
-  udon = 'udon',
-}
-
-enum Animal {
-  cat = 'cat',
-  dog = 'dog',
-  frog = 'frog'
 }
 
 const defaultValues: ValuesType = {
@@ -139,12 +133,12 @@ const App: React.FC = () => {
         {({ values, errors, isSubmitting }) => (
           <Form>
             <div>
-              <HTMLElementRender
+              <RenderHTMLElement
                 HTMLType={HTMLElementType.input}
                 placeholder='Your First Name'
                 name='firstName'
               />
-              <HTMLElementRender
+              <RenderHTMLElement
                 HTMLType={HTMLElementType.input}
                 placeholder='Your Last Name'
                 name='lastName'
@@ -152,7 +146,7 @@ const App: React.FC = () => {
             </div>
             <div>
               Is Tall:
-              <HTMLElementRender
+              <RenderHTMLElement
                 HTMLType={HTMLElementType.checkbox}
                 name='isTall'
               />
@@ -160,7 +154,7 @@ const App: React.FC = () => {
             <div>
               Drinks:
               {Object.values(Drink).map((drink, index) => (
-                <HTMLElementRender
+                <RenderHTMLElement
                   key={`drink-${index}`}
                   HTMLType={HTMLElementType.checkbox}
                   name='drinks'
@@ -173,7 +167,7 @@ const App: React.FC = () => {
             <div>
               Foods:
               {Object.values(Food).map((food, index) => (
-                <HTMLElementRender
+                <RenderHTMLElement
                   key={`food-${index}`}
                   HTMLType={HTMLElementType.radio}
                   name='foods'
@@ -194,7 +188,7 @@ const App: React.FC = () => {
                     })}>Add Pet</Button>
                     {values.pets.map((pet, index) => (
                       <div key={`${index * 2}`}>
-                        <HTMLElementRender
+                        <RenderHTMLElement
                           HTMLType={HTMLElementType.input}
                           placeholder='Pet Name'
                           name={`pets.${index}.name`}
